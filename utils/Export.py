@@ -11,6 +11,7 @@ class Export:
         self.enddate = enddate
         self.format = None
         self.jsondata = None
+        self.csvdata = None
 
     def __del__(self):
         if self.file is not None:
@@ -64,9 +65,21 @@ class Export:
                 break
             print("Try again")
 
+    def prepare_csv(self, listofreservations):
+        csvdata = []
+        for reservation in listofreservations:
+            if self.startdate < reservation.startdate < self.enddate:
+                starttime = datetime.strftime(reservation.startdate, '%d.%m.%Y %H:%M')
+                endtime = datetime.strftime(reservation.startdate + reservation.duration, '%d.%m.%Y %H:%M')
+                onereservation = [reservation.name, starttime, endtime]
+                csvdata.append(onereservation)
+        print(csvdata)
+        self.csvdata = csvdata
+
     def export_csv(self, csv_rowslist):
         with self.file:
             writer = csv.writer(self.file)
+            writer.writerow(["name", "start_time", "end_time"])
             writer.writerows(csv_rowslist)
 
     def prepare_json(self, listofreservations):

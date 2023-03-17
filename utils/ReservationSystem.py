@@ -124,4 +124,5 @@ class ReservationSchedule:
             exportdata.prepare_json(self.reservations)
             exportdata.export_json(exportdata.jsondata)
         elif exportdata.format == ".csv":
-            exportdata.export_csv()
+            exportdata.prepare_csv(self.reservations)
+            exportdata.export_csv(exportdata.csvdata)
