@@ -26,7 +26,7 @@ class Menu:
             self.reservationschedule.show_schedule()
             return True
         elif user_input.startswith("Save") or user_input == "4":
-            print(4)
+            self.reservationschedule.save_schedule()
             return True
         elif user_input.startswith("Exit") or user_input == "5":
             print("exit")

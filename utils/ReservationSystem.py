@@ -1,5 +1,6 @@
 from utils.CourtReservation import *
 from utils.Database import Database
+from utils.Export import Export
 
 
 class ReservationSchedule:
@@ -11,22 +12,22 @@ class ReservationSchedule:
         self.reservations = []
         self.database.read_alldata()
         for row in self.database.cursor.fetchall():
-            startdate = datetime.strptime(row[2], '%Y-%m-%d %H:%M:%S')
-            enddate = datetime.strptime(row[3], '%Y-%m-%d %H:%M:%S')
-            self.reservations.append(CourtReservation(row[0], row[1], startdate, enddate))
+            startdate = datetime.strptime(row[1], '%Y-%m-%d %H:%M:%S')
+            duration = timedelta(seconds=int(row[2]))
+            self.reservations.append(CourtReservation(row[0], startdate, duration))
 
     def hours_of_reservations(self, reservationdate):
         reservationsofday = []
-        reserverdhours = []
+        reservedhours = []
         for i in range(len(self.reservations)):
             if self.reservations[i].startdate.day == reservationdate.day:
                 reservationsofday.append(self.reservations[i])
         for reservation in reservationsofday:
             startdate = reservation.startdate
-            while startdate < reservation.enddate:
-                reserverdhours.append(startdate)
-                startdate = startdate + timedelta(minutes=30)
-        return reserverdhours
+            for duration in range(int(reservation.duration / timedelta(minutes=30))):
+                reservedhours.append(startdate)
+                startdate += timedelta(minutes=30)
+        return reservedhours
 
     def check_user_reservations(self, bookername, reservationdate):
         countofreservations = 0
@@ -43,60 +44,81 @@ class ReservationSchedule:
 
     def make_reservation(self):
         self.collect_dbdata()
+        newcourtreservation = CourtReservation()
 
-        bookername = input_name()
-        if bookername is None:
+        newcourtreservation.input_name()
+        if newcourtreservation.name is None:
             return None
 
         while True:
-            reservationdate = input_date("book", "book a court")
-            if reservationdate is None:
+            newcourtreservation.input_date("book", "book a court")
+            print(type(newcourtreservation.startdate))
+            if newcourtreservation.startdate is None:
                 return None
 
-            if not self.check_user_reservations(bookername, reservationdate):
+            if not self.check_user_reservations(newcourtreservation.name, newcourtreservation.startdate):
                 return None
 
-            busyhours = self.hours_of_reservations(reservationdate)
-            if reservationdate in busyhours:
-                while reservationdate in busyhours:
-                    reservationdate = reservationdate + timedelta(minutes=30)
-                if reservationdate.hour == 22:
+            busyhours = self.hours_of_reservations(newcourtreservation.startdate)
+            if newcourtreservation.startdate in busyhours:
+                while newcourtreservation.startdate in busyhours:
+                    newcourtreservation.startdate = newcourtreservation.startdate + timedelta(minutes=30)
+                if newcourtreservation.startdate.hour == 22:
                     print("Sorry but we have full occupancy to the end of the day, you can try earlier")
                     continue
                 answerfornewdate = input(f"The time you chose is unavailable, would you like to make a reservation for "
-                                         f"{reservationdate.strftime('%H:%M')} instead? (yes/no)")
+                                         f"{newcourtreservation.startdate.strftime('%H:%M')} instead? (yes/no)\n")
                 if answerfornewdate == "no":
                     continue
             break
         for i in range(len(busyhours)):
             busyhours[i] += timedelta(minutes=30)
+
         while True:
-            reservationduration = input_duration()
-            if reservationduration is None:
+            newcourtreservation.input_duration()
+            if newcourtreservation.duration is None:
                 return None
-            elif reservationdate + reservationduration in busyhours:
+            elif newcourtreservation.startdate + newcourtreservation.duration in busyhours:
                 print("You need to choose shorter duration, because of next reservation")
                 continue
             break
 
-        self.database.insert_data(CourtReservation(None,
-                                                   bookername, reservationdate, reservationdate + reservationduration))
+        self.database.insert_data(newcourtreservation)
 
     def cancel_reservation(self):
         self.collect_dbdata()
-        bookername = input_name()
-        if bookername is None:
+        cancelcourtreservation = CourtReservation()
+        cancelcourtreservation.input_name()
+        if cancelcourtreservation.name is None:
             return None
-        reservationdate = input_date("cancel", "cancel a reservation")
-        if reservationdate is None:
+        cancelcourtreservation.input_date("cancel", "cancel a reservation")
+        if cancelcourtreservation.startdate is None:
             return None
         for i in range(len(self.reservations)):
-            if self.reservations[i].name == bookername and self.reservations[i].startdate == reservationdate:
-                self.database.delete_data(bookername, reservationdate)
+            if self.reservations[i].name == cancelcourtreservation.name and \
+                    self.reservations[i].startdate == cancelcourtreservation.startdate:
+                self.database.delete_data(cancelcourtreservation.name, cancelcourtreservation.startdate)
                 return None
         print("Sorry but there is no reservation for you on specified date")
 
     def show_schedule(self):
         self.collect_dbdata()
+        printdata = Export()
+        printdata.input_time_period()
         for row in self.reservations:
             print(row)
+
+    def save_schedule(self):
+        self.collect_dbdata()
+        exportdata = Export()
+        exportdata.input_time_period()
+        if exportdata.startdate and exportdata.enddate is None:
+            return None
+        exportdata.input_format()
+        if exportdata.format is None:
+            return None
+        exportdata.input_filename()
+        if exportdata.format == ".json":
+            exportdata.export_json()
+        elif exportdata.format == ".csv":
+            exportdata.export_csv()
