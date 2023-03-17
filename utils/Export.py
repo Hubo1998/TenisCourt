@@ -10,6 +10,7 @@ class Export:
         self.startdate = startdate
         self.enddate = enddate
         self.format = None
+        self.jsondata = None
 
     def __del__(self):
         if self.file is not None:
@@ -23,7 +24,7 @@ class Export:
                 break
             except ValueError:
                 if startinputdate == "exit":
-                    break
+                    return None
                 print("Wrong date format, try input again")
         while True:
             endinputdate = input("Input an end date. (DD.MM.YYYY)\n")
@@ -37,7 +38,7 @@ class Export:
                 break
             except ValueError:
                 if endinputdate == "exit":
-                    break
+                    return None
                 print("Wrong date format, try input again")
 
     def input_format(self):
@@ -59,7 +60,7 @@ class Export:
 
             if len(filenameinput) > 0 and filenameinput.isascii():
                 self.filename = filenameinput
-                self.file = open(self.filename, 'w')
+                self.file = open(self.filename + self.format, 'w')
                 break
             print("Try again")
 
@@ -68,6 +69,21 @@ class Export:
             writer = csv.writer(self.file)
             writer.writerows(csv_rowslist)
 
+    def prepare_json(self, listofreservations):
+        jsondata = {}
+        for i in range((self.enddate - self.startdate).days):
+            dateofres = self.startdate + timedelta(days=i)
+            reservationsofday = []
+            for reservation in listofreservations:
+                if self.startdate < reservation.startdate < self.enddate and \
+                        reservation.startdate.date() == dateofres.date():
+                    starttime = datetime.strftime(reservation.startdate, '%H:%M')
+                    endtime = datetime.strftime(reservation.startdate + reservation.duration, '%H:%M')
+                    oneres = {"name": f"{reservation.name}", "start_time": f"{starttime}", "end_time": f"{endtime}"}
+                    reservationsofday.append(oneres)
+            jsondata[datetime.strftime(dateofres, '%d.%m')] = reservationsofday
+        self.jsondata = jsondata
+
     def export_json(self, json_rowslist):
         with self.file:
-            json.dump(json_rowslist, self.file)
+            json.dump(json_rowslist, self.file, indent=0)

@@ -105,6 +105,8 @@ class ReservationSchedule:
         self.collect_dbdata()
         printdata = Export()
         printdata.input_time_period()
+        if printdata.startdate or printdata.enddate is None:
+            return None
         for row in self.reservations:
             print(row)
 
@@ -119,6 +121,7 @@ class ReservationSchedule:
             return None
         exportdata.input_filename()
         if exportdata.format == ".json":
-            exportdata.export_json()
+            exportdata.prepare_json(self.reservations)
+            exportdata.export_json(exportdata.jsondata)
         elif exportdata.format == ".csv":
             exportdata.export_csv()
