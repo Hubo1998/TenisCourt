@@ -1,4 +1,4 @@
-# TenisCourt
+# TenisCourt - Hubert Marchwat
 Tenis Court reservation REPL application which allows to make and cancel reservations, print and save to a file schedule.
 
 ## MENU
