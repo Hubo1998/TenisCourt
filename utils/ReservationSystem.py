@@ -52,7 +52,6 @@ class ReservationSchedule:
 
         while True:
             newcourtreservation.input_date("book", "book a court")
-            print(type(newcourtreservation.startdate))
             if newcourtreservation.startdate is None:
                 return None
 
@@ -84,6 +83,7 @@ class ReservationSchedule:
             break
 
         self.database.insert_data(newcourtreservation)
+        print(f"You have booked a court on {newcourtreservation.startdate.strftime('%d.%m.%Y %H:%M')}")
 
     def cancel_reservation(self):
         self.collect_dbdata()
@@ -98,6 +98,8 @@ class ReservationSchedule:
             if self.reservations[i].name == cancelcourtreservation.name and \
                     self.reservations[i].startdate == cancelcourtreservation.startdate:
                 self.database.delete_data(cancelcourtreservation.name, cancelcourtreservation.startdate)
+                print(f"You have canceled a reservation on "
+                      f"{cancelcourtreservation.startdate.strftime('%d.%m.%Y %H:%M')}")
                 return None
         print("Sorry but there is no reservation for you on specified date")
 
@@ -148,3 +150,4 @@ class ReservationSchedule:
         elif exportdata.format == ".csv":
             exportdata.prepare_csv(self.reservations)
             exportdata.export_csv(exportdata.csvdata)
+        print(f"You saved a schedule to a {exportdata.filename + exportdata.format} file")

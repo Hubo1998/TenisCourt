@@ -32,7 +32,7 @@ class Export:
             try:
                 enddate = datetime.strptime(endinputdate, '%d.%m.%Y')
                 if enddate >= self.startdate:
-                    self.enddate = enddate
+                    self.enddate = enddate + timedelta(days=1)
                 else:
                     print("End date must be after start date.")
                     continue
@@ -61,7 +61,7 @@ class Export:
 
             if len(filenameinput) > 0 and filenameinput.isascii():
                 self.filename = filenameinput
-                self.file = open(self.filename + self.format, 'w')
+                self.file = open(self.filename + self.format, 'w', encoding='utf-8')
                 break
             print("Try again")
 
@@ -73,7 +73,6 @@ class Export:
                 endtime = datetime.strftime(reservation.startdate + reservation.duration, '%d.%m.%Y %H:%M')
                 onereservation = [reservation.name, starttime, endtime]
                 csvdata.append(onereservation)
-        print(csvdata)
         self.csvdata = csvdata
 
     def export_csv(self, csv_rowslist):
@@ -99,4 +98,4 @@ class Export:
 
     def export_json(self, json_rowslist):
         with self.file:
-            json.dump(json_rowslist, self.file, indent=0)
+            json.dump(json_rowslist, self.file, indent=1, ensure_ascii=False)

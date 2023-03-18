@@ -10,7 +10,7 @@ class Menu:
     def show_menu(self):
         print("1. Make a reservation")
         print("2. Cancel a reservation")
-        print("3. Print Schedule")
+        print("3. Print schedule")
         print("4. Save schedule to a file")
         print("5. Exit")
         user_input = input("What you want to do?\n")
