@@ -29,7 +29,7 @@ class Menu:
             self.reservationschedule.save_schedule()
             return True
         elif user_input.startswith("Exit") or user_input == "5":
-            print("exit")
+            print("Have a good day!")
             return False
         elif user_input == "Setup_table":
             self.database.setup_table()

@@ -101,20 +101,42 @@ class ReservationSchedule:
                 return None
         print("Sorry but there is no reservation for you on specified date")
 
+    def print_days_reservations(self, day: str, dateofreservation):
+        print(f"{day}:")
+        count = 0
+        for reservation in self.reservations:
+            if dateofreservation == reservation.startdate.date():
+                print(reservation)
+                count += 1
+        if count == 0:
+            print("No Reservations")
+        print()
+
     def show_schedule(self):
         self.collect_dbdata()
         printdata = Export()
         printdata.input_time_period()
-        if printdata.startdate or printdata.enddate is None:
+        if printdata.startdate is None or printdata.enddate is None:
             return None
-        for row in self.reservations:
-            print(row)
+        for i in range((printdata.enddate - printdata.startdate).days):
+            dayofreservations = printdata.startdate.date() + timedelta(days=i)
+            datenow = datetime.now().date()
+            if dayofreservations == datenow:
+                self.print_days_reservations("Today", dayofreservations)
+            elif datenow + timedelta(days=1) >= dayofreservations > datenow:
+                self.print_days_reservations("Tomorrow", dayofreservations)
+            elif datenow > dayofreservations >= datenow - timedelta(days=1):
+                self.print_days_reservations("Yesterday", dayofreservations)
+            elif datenow + timedelta(days=7) > dayofreservations > datenow:
+                self.print_days_reservations(dayofreservations.strftime('%A'), dayofreservations)
+            else:
+                self.print_days_reservations(dayofreservations.strftime('%Y-%m-%d'), dayofreservations)
 
     def save_schedule(self):
         self.collect_dbdata()
         exportdata = Export()
         exportdata.input_time_period()
-        if exportdata.startdate and exportdata.enddate is None:
+        if exportdata.startdate is None or exportdata.enddate is None:
             return None
         exportdata.input_format()
         if exportdata.format is None:

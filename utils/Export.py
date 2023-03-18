@@ -7,8 +7,8 @@ class Export:
     def __init__(self, filename=None, startdate=None, enddate=None):
         self.filename = filename
         self.file = None
-        self.startdate = startdate
-        self.enddate = enddate
+        self.startdate: datetime = startdate
+        self.enddate: datetime = enddate
         self.format = None
         self.jsondata = None
         self.csvdata = None
