@@ -4,8 +4,8 @@ from datetime import datetime, timedelta
 
 
 class Export:
-    def __init__(self, filename=None, startdate=None, enddate=None):
-        self.filename = filename
+    def __init__(self, startdate=None, enddate=None):
+        self.filename = None
         self.file = None
         self.startdate: datetime = startdate
         self.enddate: datetime = enddate
@@ -58,7 +58,6 @@ class Export:
     def input_filename(self):
         while True:
             filenameinput = input("Input name of file that you want to export data to:\n")
-
             if len(filenameinput) > 0 and filenameinput.isascii():
                 self.filename = filenameinput
                 self.file = open(self.filename + self.format, 'w', encoding='utf-8')

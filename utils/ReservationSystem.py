@@ -60,15 +60,28 @@ class ReservationSchedule:
 
             busyhours = self.hours_of_reservations(newcourtreservation.startdate)
             if newcourtreservation.startdate in busyhours:
-                while newcourtreservation.startdate in busyhours:
-                    newcourtreservation.startdate = newcourtreservation.startdate + timedelta(minutes=30)
-                if newcourtreservation.startdate.hour == 22:
-                    print("Sorry but we have full occupancy to the end of the day, you can try earlier")
+                originalstartdate: datetime = newcourtreservation.startdate
+                newstartdateafter = originalstartdate
+                newstartdatebefore = originalstartdate
+                i = 1
+                while newstartdateafter in busyhours and newstartdatebefore in busyhours:
+                    if newstartdateafter.hour < 22:
+                        newstartdateafter = originalstartdate + timedelta(minutes=30 * i)
+                    if newstartdatebefore.hour > 7:
+                        newstartdatebefore = originalstartdate - timedelta(minutes=30 * i)
+                    i += 1
+                if newstartdateafter not in busyhours:
+                    newcourtreservation.startdate = newstartdateafter
+                elif newstartdatebefore not in busyhours:
+                    newcourtreservation.startdate = newstartdatebefore
+                elif newstartdatebefore.hour > 7 and newstartdateafter.hour < 22:
+                    print("Sorry but we have full occupancy to the end of the day, you can try another day")
                     continue
                 answerfornewdate = input(f"The time you chose is unavailable, would you like to make a reservation for "
                                          f"{newcourtreservation.startdate.strftime('%H:%M')} instead? (yes/no)\n")
                 if answerfornewdate == "no":
                     continue
+
             break
         for i in range(len(busyhours)):
             busyhours[i] += timedelta(minutes=30)
